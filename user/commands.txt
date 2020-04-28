@@ -1,0 +1,21 @@
+python challenge.py  fashion-MNIST  -right
+                     MNSIT          -right-noisy
+                     SVHN           -right-noisy 1 5
+                                    -left
+                                    -left-noisy
+                                    -left-noisy 3 7
+                      
+python main.py   fashion-MNIST  -load                 -final
+                 MNIST          -load-selfsup-right
+                 SVHN           -load-selfsup-left
+                                (empty                empty)               
+
+python visualize.py   fashion-MNIST   -forest   0 1 260 261
+                      MNIST           -tree
+                      SVHN            (empt)  
+
+EXAMPLE:
+python challenge.py   -right
+python main.py        MNIST           -load                 -final
+python main.py        fashion-MNIST   -load-selfsup-righ
+python visualize.py   fashion-MNIST   -forest               0 1 260 261
