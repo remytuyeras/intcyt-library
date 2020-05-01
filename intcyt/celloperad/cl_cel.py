@@ -326,7 +326,7 @@ class Cell(object):
             exit(0)
           #~~~~~~~~~~~~~~~~~~~
           #barycenter += matrix[i][u] * prop[i]
-            barycenter += matrix[i][u] * (self.Sorg[i]/float(self.SK))
+          barycenter += matrix[i][u] * (self.Sorg[i]/float(self.SK))
       #~~~~~~~~~~~~~~~~~~~
       graph_u = list()
       for i in range(len(self.organelles)):

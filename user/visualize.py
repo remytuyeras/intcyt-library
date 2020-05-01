@@ -175,7 +175,7 @@ if sys.argv[1] == "BINARY":
   image_size = [28,28,1] #bicolor
   batch_roo = 1
   batch_org = 20
-  epoch = 4
+  epoch = 1
   
   dim = image_size[0] * image_size[1] * image_size[2]
   fim = gzip.open("data/binary_training.gz","r")

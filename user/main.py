@@ -126,12 +126,13 @@ for i in range(10000):
   if sys.argv[1] == "fashion-MNIST":
     buf_lab = ftr.read(1)
     buf_inp = fim.read(dim)
-    label = map(lambda x: categories[x], np.frombuffer(buf_lab, dtype=np.uint8).astype(np.int64))
+    rename = lambda x: categories[x]
+    label = ", ".join(map(rename, np.frombuffer(buf_lab, dtype=np.uint8).astype(np.int64)))
     inputs = np.frombuffer(buf_inp, dtype=np.uint8).astype(np.float32)
   #------------------
   if sys.argv[1] == "BINARY":
-    label = categories[i%2]
-    inputs = listim[i%2][0]
+    label = categories[i % 2]
+    inputs = listim[i % 2][0]
   #------------------  
   #Normalization of the input vector
   #------------------
@@ -153,14 +154,15 @@ for i in range(10000):
                  1.5]  #fusion
   #------------------ 
   if sys.argv[1] in ["BINARY"]:
-    start = 16
-    epoch = 4
-    fission_events = (i % 16 in [0]) * range(epoch)
-    fusion_events = (i % 16 in [i for i in range(1,16) if i%2 == 0]) * range(epoch)
-    compose_events = (i % 16 in [i for i in range(1,16) if i%2 == 1]) * range(epoch)
+    start = 4
+    epoch = 1
+    period = 10
+    fission_events = (i % period in [0]) * range(epoch)
+    fusion_events = (i % period in [k for k in range(1,period) if k%2 == 0]) * range(epoch)
+    compose_events = (i % period in [k for k in range(1,period) if k%2 == 1]) * range(epoch)
     #------------------
     filtering = [2, #fission
-                 .7]  #fusion
+                 1]  #fusion
   #------------------
   events = [start,epoch,fission_events,fusion_events,compose_events]
   #------------------
@@ -230,29 +232,12 @@ for i in range(10000):
     if sys.argv[1] == "BINARY":
       #------------------
       brightness = [.1,.25,.5,.75,.9]
-      #the average profile for MNIST is [(0,.175),(0,.156),(0,.133),(0,.106),(0,.088)]
-      profiles = [[(0,.1),(0,.1),(0,.1),(0,.1),(0,.1)], #student
-                  [(0,.1),(0,.1),(0,.1),(0,.1),(0,.1)],
-                  [(0,.1),(0,.1),(0,.1),(0,.1),(0,.1)],
-                  [(0,.1),(0,.1),(0,.1),(0,.1),(0,.1)],
-                  [(0,.1),(0,.1),(0,.1),(0,.1),(0,.1)],
-                  [(0,.1),(0,.1),(0,.1),(0,.1),(0,.1)],
-                  [(0,.1),(0,.1),(0,.1),(0,.1),(0,.1)],
-                  [(0,.1),(0,.1),(0,.1),(0,.1),(0,.1)],
-                  [(0,.1),(0,.1),(0,.1),(0,.1),(0,.1)],
-                  [(0,.1),(0,.1),(0,.1),(0,.1),(0,.1)]]  #expert
-      scores = [.1,
-                .2,
-                .3,
-                .4, #student
-                .5,
-                .6,
-                .7,
-                .8,
-                .9,
-                .95] #expert
-      E = 13
-      F = 35
+      profiles = [[(0,.6),(0,.25),(0,1),(0,1),(0,.1)], #student
+                  [(0,.2),(0,.15),(0,.1),(0,.1),(0,.1)]]  #expert
+      scores = [.7, #student
+                .8] #expert
+      E = 12.5
+      F = 20
     #------------------
     gamma_parameter = usf.gamma(E,F,brightness,profiles,scores,*selfsup)
     intcyt(operad,sc,epoch*i+k,events,vector,gamma_parameter,filtering)

@@ -49,10 +49,11 @@ class _Useful:
       for i in range(len(c.organelles)):
       
         contrast = self.contrast(brightness,profiles)(c.organelles[i],*challenge)
-        if True in contrast:
-          agreement = c.agreement(i,a[i])
-        else:
-          agreement = c.agreement(i,a[i],*challenge)
+        agreement = c.agreement(i,a[i],*challenge)
+        #if True in contrast:
+          #agreement = c.agreement(i,a[i])
+        #else:
+          #agreement = c.agreement(i,a[i],*challenge)
         good_scenario = True
         
         for j in range(len(profiles)):
@@ -141,6 +142,7 @@ class _Useful:
       output_file.write("@"+str(total - (super_cell.depth + diff - i)))
       output_file.write(":"+str(super_cell.depth + diff - i))
       output_file.write(":1")
+      output_file.write(":"+str(1+10*super_cell.cell.residual/float(super_cell.cell.SK))) #RESIDUAL
       output_file.write("\n")
       self.print_data(super_cell.cell.K,image_size,output_file,option)
       output_file.write("\n")
@@ -148,6 +150,7 @@ class _Useful:
     output_file.write("@"+str(total - super_cell.depth))
     output_file.write(":"+str(super_cell.depth))
     output_file.write(":"+str(len(super_cell.cell.organelles)))
+    output_file.write(":"+str(1+10*super_cell.cell.residual/float(super_cell.cell.SK))) #RESIDUAL
     output_file.write("\n")
     self.print_data(super_cell.cell.K,image_size,output_file,option)
     output_file.write("\n")
@@ -157,6 +160,7 @@ class _Useful:
       output_file.write("@"+str(super_cell.level))
       output_file.write(":-1")
       output_file.write(":"+str(len(super_cell.cell.organelles)))
+      output_file.write(":1")
       output_file.write("\n")
       
       for i in range(len(super_cell.cell.organelles)):
@@ -231,13 +235,14 @@ class _Useful:
             tree.append([])
 
       elif cycle in cycles:
-        if len(info) >= 3:
+        if len(info) >= 4:
           depth    = info[1]
           children = info[2]
+          residual = info[3] #RESIDUAL
           if depth == -1:
             tree[1+depth].append(self.parse_image(s,['\t'],['\n']))
           else:
-            tree[1+depth].append([children,self.parse_image(s,['\t'],['\n'])])
+            tree[1+depth].append([children,self.parse_image(s,['\t'],['\n']),residual]) #RESIDUAL
       
       if cycle > max(cycles):
         break
@@ -286,13 +291,13 @@ class _Useful:
     
     return new_image
   #------------------------------------------------------------------------------ 
-  def rgb_colormap(self,maximum,grayscale = False):
+  def rgb_colormap(self,maximum,grayscale = False,intensity = 1): #RESIDUAL
     rescale = lambda t: int(200*t/float(maximum))
     #RGB codes [50,*,100] give blue/yellow contrast
-    contrast = lambda x : [200-rescale(x[0])]*3 if grayscale else [50,rescale(x[0]),100]
+    contrast = lambda x : [200-rescale(x[0])]*3 if grayscale else [intensity*50,rescale(x[0]),100] #RESIDUAL
     return lambda x : map(rescale,x) if len(x) != 1 else contrast(x)
   #------------------------------------------------------------------------------
-  def make_rgb_panel(self,memory,image_size,grayscale = False):
+  def make_rgb_panel(self,memory,image_size,grayscale = False,intensity = []): #RESIDUAL
     black_color = [1,1,1]
     rgb_panel = list()
     
@@ -304,7 +309,10 @@ class _Useful:
         maximum = max(memory[i])
         
         for k in range(image_size[1]):
-          row.append(self.rgb_colormap(maximum,grayscale)(line[image_size[2]*k:image_size[2]*(k+1)]))
+          if intensity != []: #RESIDUAL
+            row.append(self.rgb_colormap(maximum,grayscale,intensity[i])(line[image_size[2]*k:image_size[2]*(k+1)])) #RESIDUAL
+          else: #RESIDUAL
+            row.append(self.rgb_colormap(maximum,grayscale)(line[image_size[2]*k:image_size[2]*(k+1)])) #RESIDUAL
         if i != len(memory)-1:
           row.append(black_color)
           
@@ -369,9 +377,11 @@ class _Useful:
       #getting data for building branches: ---  ---
       horizontal_cover = list() 
       parent_images = list()
+      parent_colors = list() #RESIDUAL
       for i in range(len(tree[1+index])):
         horizontal_cover.append(tree[1+index][i][0])
         parent_images.append(tree[1+index][i][1])
+        parent_colors.append(tree[1+index][i][2]) #RESIDUAL
 
       #~~~~~~~~~~~~~~
       
@@ -443,7 +453,7 @@ class _Useful:
       
       #~~~~~~~~~~~~~~
       
-      rgb_panel = self.make_rgb_panel(parent_images,image_size,grayscale)
+      rgb_panel = self.make_rgb_panel(parent_images,image_size,grayscale,parent_colors) #RESIDUAL
       shifted_rgb_panel = list()
       for k in range(len(rgb_panel)):
         row = list()
