@@ -236,23 +236,24 @@ class _Useful:
 
       elif cycle in cycles:
         
-        if len(info) >= 3:
+        if len(info) == 3:
           depth    = info[1]
           children = info[2]
           if depth == -1:
             tree[1+depth].append(self.parse_image(s,['\t'],['\n']))
           else:
             tree[1+depth].append([children,self.parse_image(s,['\t'],['\n'])])
-      
-        if len(info) >= 4: #RESIDUAL
+        
+        elif len(info) >= 4: #RESIDUAL
           depth    = info[1] #RESIDUAL
           children = info[2] #RESIDUAL
-          residual = info[3]  #RESIDUAL
+          residual = info[3] #RESIDUAL
           if depth == -1: #RESIDUAL
             tree[1+depth].append(self.parse_image(s,['\t'],['\n'])) #RESIDUAL
           else: #RESIDUAL
             content = self.parse_image(s,['\t'],['\n']) #RESIDUAL
-            tree[1+depth].append([children,content,1+10*residual/sum(content)]) #RESIDUAL
+            tree[1+depth].append([children,content,1+residual/sum(content)]) #RESIDUAL
+            print "[DEBUG] learning stress["+str(1+depth)+"]:"+ str(1+residual/sum(content))
       
       
       if cycle > max(cycles):
@@ -320,10 +321,11 @@ class _Useful:
         maximum = max(memory[i])
         
         for k in range(image_size[1]):
+          pixel_k = line[image_size[2]*k:image_size[2]*(k+1)]
           if residual_heat != []: #RESIDUAL
-            row.append(self.rgb_colormap(maximum,grayscale,residual_heat[i])(line[image_size[2]*k:image_size[2]*(k+1)])) #RESIDUAL
+            row.append(self.rgb_colormap(maximum,grayscale,residual_heat[i])(pixel_k)) #RESIDUAL
           else: #RESIDUAL
-            row.append(self.rgb_colormap(maximum,grayscale)(line[image_size[2]*k:image_size[2]*(k+1)])) #RESIDUAL
+            row.append(self.rgb_colormap(maximum,grayscale)(pixel_k)) #RESIDUAL
         if i != len(memory)-1:
           row.append(black_color)
           
@@ -465,7 +467,6 @@ class _Useful:
       positions_images = new_positions_images
       
       #~~~~~~~~~~~~~~
-      
       rgb_panel = self.make_rgb_panel(parent_images,image_size,grayscale,residual_heat) #RESIDUAL
       shifted_rgb_panel = list()
       for k in range(len(rgb_panel)):
