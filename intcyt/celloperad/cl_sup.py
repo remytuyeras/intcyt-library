@@ -335,7 +335,7 @@ class SuperCell(object):
     #~~~~~~~~~~~~~~~~~~~
     return self
 #------------------------------------------------------------------------------
-  def _fusion(self,tensor,filtering = 1.5):
+  def _fusion(self,tensor,filtering = [1.5,0]):
     if not(self.is_leaf):
       #~~~~~~~~~~~~~~~~~~~
       for i in range(len(self.innercells)):
@@ -348,14 +348,14 @@ class SuperCell(object):
         self.merge_base(mer,tensor)
         print "Merging occurring due to organelle(s):", mer, "at level =",self.level
 #------------------------------------------------------------------------------
-  def fusion(self,vector,operad,filtering  = 1.5):
+  def fusion(self,vector,operad,filtering  = [1.5,0]):
     #spontaneous_reaction is necessary to update pre_action
     self.spontaneous_reaction(vector,operad.identity)
     self._fusion(operad.merging_tensor,filtering)
     self.reset_depth()
     return self
 #------------------------------------------------------------------------------ 
-  def _fission(self,tensor,filtering = 1.5):
+  def _fission(self,tensor,filtering = [1.5,0]):
     if not(self.is_leaf):
       #~~~~~~~~~~~~~~~~~~~
       for i in range(len(self.innercells)):
@@ -368,7 +368,7 @@ class SuperCell(object):
       self.divide_base(div,tensor)
       print "Division occurring due to organelle(s):", div, "at level =",self.level
 #------------------------------------------------------------------------------
-  def fission(self,vector,operad,filtering  = 1.5):
+  def fission(self,vector,operad,filtering  = [1.5,0]):
     #spontaneous_reaction is necessary to update pre_action
     self.spontaneous_reaction(vector,operad.identity)
     self._fission(operad.dividing_tensor,filtering)

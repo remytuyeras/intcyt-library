@@ -295,12 +295,12 @@ class Cell(object):
           #result_k += 1
       result.append([k,result_k])
       result.sort(key = lambda x :-x[1])
-    if result[0][1] != 0:
+    if result != [] and result[0][1] != 0:
       return cliques[result[0][0]]
     else:
       return list() 
 #------------------------------------------------------------------------------      
-  def proposed_clustering(self,matrix,option,filtering = 1.5):
+  def proposed_clustering(self,matrix,option,filtering = [1.5,0]):
     #~~~~~~~~~~~~~~~~~~~
     if len(matrix) != len(self.organelles):
       print "Error: in Cell.proposed_clustering: the input list should contain " + \
@@ -331,10 +331,10 @@ class Cell(object):
       graph_u = list()
       for i in range(len(self.organelles)):
         if option == "division":
-          if matrix[i][u] > filtering * barycenter:
+          if matrix[i][u] > filtering[0] * barycenter:
             graph_u.append(i)
         elif option == "merging":
-          if matrix[i][u] < filtering * barycenter:
+          if matrix[i][u] < filtering[0] * barycenter:
             graph_u.append(i)
         else:
           print "Warning: Error: in Cell.proposed_clustering: no valid option given (option = " + \
@@ -346,7 +346,7 @@ class Cell(object):
           nonempty = True
       #~~~~~~~~~~~~~~~~~~~
     if nonempty:
-      cliques =  usf.cliques(graph)
+      cliques =  usf.cliques(graph,filtering[1])
       return self.best_compartment(cliques)
       #~~~~~~~~~~~~~~~~~~~
     else:

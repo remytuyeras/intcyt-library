@@ -143,28 +143,16 @@ for i in range(10000):
   #------------------  
   debug_time.set("Learning data labeled as " + label)
   #------------------
-  if sys.argv[1] in ["SVHN","MNIST","fashion-MNIST"]:
-    start = 4
-    epoch = 4
-    fission_events = [0]
-    fusion_events = [2]
-    compose_events = [1,3]
-    #------------------
-    filtering = [1.5, #fission
-                 1.5]  #fusion
-  #------------------ 
-  if sys.argv[1] in ["BINARY"]:
-    start = 4
-    epoch = 1
-    period = 10
-    fission_events = (i % period in [0]) * range(epoch)
-    fusion_events = (i % period in [k for k in range(1,period) if k%2 == 0]) * range(epoch)
-    compose_events = (i % period in [k for k in range(1,period) if k%2 == 1]) * range(epoch)
-    #------------------
-    filtering = [2, #fission
-                 1]  #fusion
-  #------------------
+  start = 4
+  epoch = 4
+  fission_events = [0]
+  fusion_events = [2]
+  compose_events = [1,3]
   events = [start,epoch,fission_events,fusion_events,compose_events]
+  #------------------
+  filtering = [1.5, #To control fission
+               1.5, #To control fusion
+               0]  #To control fission and fusion: minimum threshold for cliques
   #------------------
   for k in range(epoch):
     debug_time.set("TREE")
@@ -181,6 +169,7 @@ for i in range(10000):
       E = 13
       F = 25
     #------------------
+    '''
     if sys.argv[1] == "MNIST":
       #------------------
       brightness = [.1,.25,.5,.75,.9]
@@ -204,7 +193,7 @@ for i in range(10000):
                 .8] #expert
       E = 14
       F = 25
-    '''
+    
     #------------------
     if sys.argv[1] == "fashion-MNIST":
       #------------------

@@ -142,7 +142,7 @@ class _Useful:
       output_file.write("@"+str(total - (super_cell.depth + diff - i)))
       output_file.write(":"+str(super_cell.depth + diff - i))
       output_file.write(":1")
-      output_file.write(":"+str(super_cell.cell.residual)) #RESIDUAL
+      output_file.write(":"+str(super_cell.cell.residual)) 
       output_file.write("\n")
       self.print_data(super_cell.cell.K,image_size,output_file,option)
       output_file.write("\n")
@@ -150,7 +150,7 @@ class _Useful:
     output_file.write("@"+str(total - super_cell.depth))
     output_file.write(":"+str(super_cell.depth))
     output_file.write(":"+str(len(super_cell.cell.organelles)))
-    output_file.write(":"+str(super_cell.cell.residual)) #RESIDUAL
+    output_file.write(":"+str(super_cell.cell.residual)) 
     output_file.write("\n")
     self.print_data(super_cell.cell.K,image_size,output_file,option)
     output_file.write("\n")
@@ -244,15 +244,15 @@ class _Useful:
           else:
             tree[1+depth].append([children,self.parse_image(s,['\t'],['\n'])])
         
-        elif len(info) >= 4: #RESIDUAL
-          depth    = info[1] #RESIDUAL
-          children = info[2] #RESIDUAL
-          residual = info[3] #RESIDUAL
-          if depth == -1: #RESIDUAL
-            tree[1+depth].append(self.parse_image(s,['\t'],['\n'])) #RESIDUAL
-          else: #RESIDUAL
-            content = self.parse_image(s,['\t'],['\n']) #RESIDUAL
-            tree[1+depth].append([children,content,1+residual/sum(content)]) #RESIDUAL
+        elif len(info) >= 4: 
+          depth    = info[1] 
+          children = info[2] 
+          residual = info[3] 
+          if depth == -1: 
+            tree[1+depth].append(self.parse_image(s,['\t'],['\n'])) 
+          else: 
+            content = self.parse_image(s,['\t'],['\n']) 
+            tree[1+depth].append([children,content,1+residual/sum(content)]) 
             print "[DEBUG] learning stress["+str(1+depth)+"]:"+ str(1+residual/sum(content))
       
       
@@ -303,13 +303,16 @@ class _Useful:
     
     return new_image
   #------------------------------------------------------------------------------ 
-  def rgb_colormap(self,maximum,grayscale = False,residual_heat = 1.0): #RESIDUAL
-    rescale = lambda t: int(200*t/float(maximum))
-    #RGB codes [50,*,100] give blue/yellow contrast
-    contrast = lambda x : [200-rescale(x[0])]*3 if grayscale else [int(residual_heat*50),rescale(x[0]),100] #RESIDUAL
+  def rgb_colormap(self,maximum,grayscale = False,residual_heat = 1.0): 
+    red      = int(residual_heat*50)
+    blue     = 100
+    rescale  = lambda t: int(200*t/float(maximum))
+    green    = lambda x: rescale(x[0])
+    gray     = lambda x: [200-rescale(x[0])]*3
+    contrast = lambda x : gray(x) if grayscale else [red,green(x),blue] 
     return lambda x : map(rescale,x) if len(x) != 1 else contrast(x)
   #------------------------------------------------------------------------------
-  def make_rgb_panel(self,memory,image_size,grayscale = False,residual_heat = []): #RESIDUAL
+  def make_rgb_panel(self,memory,image_size,grayscale = False,residual_heat = []): 
     black_color = [1,1,1]
     rgb_panel = list()
     
@@ -322,10 +325,10 @@ class _Useful:
         
         for k in range(image_size[1]):
           pixel_k = line[image_size[2]*k:image_size[2]*(k+1)]
-          if residual_heat != []: #RESIDUAL
-            row.append(self.rgb_colormap(maximum,grayscale,residual_heat[i])(pixel_k)) #RESIDUAL
-          else: #RESIDUAL
-            row.append(self.rgb_colormap(maximum,grayscale)(pixel_k)) #RESIDUAL
+          if residual_heat != []: 
+            row.append(self.rgb_colormap(maximum,grayscale,residual_heat[i])(pixel_k)) 
+          else: 
+            row.append(self.rgb_colormap(maximum,grayscale)(pixel_k)) 
         if i != len(memory)-1:
           row.append(black_color)
           
@@ -390,12 +393,12 @@ class _Useful:
       #getting data for building branches: ---  ---
       horizontal_cover = list() 
       parent_images = list()
-      residual_heat = list() #RESIDUAL
+      residual_heat = list() 
       for i in range(len(tree[1+index])):
         horizontal_cover.append(tree[1+index][i][0])
         parent_images.append(tree[1+index][i][1])
-        if len(tree[1+index][i]) >= 3: #RESIDUAL
-          residual_heat.append(tree[1+index][i][2]) #RESIDUAL
+        if len(tree[1+index][i]) >= 3: 
+          residual_heat.append(tree[1+index][i][2]) 
 
 
       #~~~~~~~~~~~~~~
@@ -467,7 +470,7 @@ class _Useful:
       positions_images = new_positions_images
       
       #~~~~~~~~~~~~~~
-      rgb_panel = self.make_rgb_panel(parent_images,image_size,grayscale,residual_heat) #RESIDUAL
+      rgb_panel = self.make_rgb_panel(parent_images,image_size,grayscale,residual_heat) 
       shifted_rgb_panel = list()
       for k in range(len(rgb_panel)):
         row = list()
@@ -574,7 +577,7 @@ class _Useful:
         
     return the_join
   #------------------------------------------------------------------------------
-  def cliques(self,a_matrix):
+  def cliques(self,a_matrix,filtering = 0):
     m = 0
     fibers = list()
     print "Searching cliques in the following graph:"
@@ -586,11 +589,14 @@ class _Useful:
           fibers = [[i,j]]
         elif m == a_matrix[i][j]:
           fibers.append([i,j])
-    print "Maximal weight = ", m
+    print "Maximal weight = ", m, " | greater than "+str(filtering)+" = ", m > filtering
     print "Edges with maximal weight = ", fibers
     join = self.join_fibers(fibers,fibers,"REG")
     join.sort(key = lambda x :-len(x))
-    return join
+    if m > filtering:
+      return join
+    else:
+      return []
     
 usf = _Useful()    
     
