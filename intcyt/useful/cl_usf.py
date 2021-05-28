@@ -11,7 +11,7 @@ class _Useful:
         if len(challenge) == 1 and challenge[0][0] <= u % challenge[0][2] <= challenge[0][1]:
           continue
         elif maximum < vector[u]:
-          maximum = vector[u]
+            maximum = vector[u]
 
       counts = [0] * len(brightness)
       total = 0
@@ -34,8 +34,8 @@ class _Useful:
         contrast_tests.append(profile_value)
       
       percents = map(lambda x: str(int(10000.*x)/10000.),percents)
-      print "[brightness]  " + " ".join(percents)
-      print " ".join(map(str,contrast_tests))+"\n"
+      print "[brightness]  " + " ".join(percents)+(len(challenge) ==1)*" (learning area only)"
+      print "[contrast_check]  " +" ".join(map(str,contrast_tests))
       return contrast_tests
 
     return (lambda vector,*challenge : contrast_profiles(brightness,profiles,vector,*challenge))
@@ -50,16 +50,16 @@ class _Useful:
       
         contrast = self.contrast(brightness,profiles)(c.organelles[i],*challenge)
         agreement = c.agreement(i,a[i],*challenge)
-        #if True in contrast:
-          #agreement = c.agreement(i,a[i])
-        #else:
-          #agreement = c.agreement(i,a[i],*challenge)
         good_scenario = True
         
         for j in range(len(profiles)):
-          good_scenario = good_scenario and not(contrast[j] and agreement < scores[j])
+          bad_agreement = not(scores[j][0] <= agreement <= scores[j][1])
+          good_scenario = good_scenario and not(contrast[j] and bad_agreement)
         good_agreement = good_scenario * agreement
         maximum = max(maximum,good_agreement)
+        
+        print "[agreement]  "+str(agreement)
+        print "[agreement after contrast check]  "+str(good_agreement)+"\n"
         
         row = list()
         for u in range(len(c.organelles[i])):
@@ -67,16 +67,13 @@ class _Useful:
             row.append(0)
           else:
             row.append(good_agreement)
-          #row.append([good_agreement,i,agreement])
-          
         parameters.append(row)
-        
+      
       maximum = 1 if maximum == 0 else maximum
       for i in range(len(parameters)):
         for u in range(len(parameters[i])):
+          #parameters[i][u] = (10 **E) * ((parameters[i][u])**F)
           parameters[i][u] = (10 **E) * ((parameters[i][u]/maximum)**F)
-          #parameters[i][u][0] = (10 **E) * ((parameters[i][u][0]/maximum)**F)
-          #parameters[i][u] = [parameters[i][u][0],parameters[i][u][2],parameters[i][u][2]/maximum]
       
       return parameters
       
@@ -85,7 +82,7 @@ class _Useful:
   def print_data(self,inputs,image_size,output_file,option = 'display'):
     
     if option == 'save':
-      output_file.write("\t".join(map(lambda x: str(int(x)),inputs)))
+      output_file.write("\t".join(map(lambda x: str(int(100000*x)/100000.0),inputs)))
     
     else:
       display = list()
