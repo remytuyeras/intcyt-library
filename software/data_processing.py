@@ -4,17 +4,17 @@ import math
 import scipy.stats as scstat
 import matplotlib.pyplot as plt
 #---------------------------------------------------------------------------------------
-def remove_nr(x):
-  x[len(x)-1] = x[len(x)-1].split('\n')[0]
-  x[len(x)-1] = x[len(x)-1].split('\r')[0]
-  return x
-#---------------------------------------------------------------------------------------
+#This function get various types of information from the DREAM3 files
+#title= contains the titles indidicating the fields of the columns (ID, gene name, times)
+#genes = contains the gene names
+#expressions = contains the expression values from a certain index start_expr 
+#(start_expr is not the same in every file: see the class Data below)
 def get_file_structure(fdoc,start_expr):
   title = list()
   genes = list()
   expressions = list()
   for i,s in enumerate(fdoc):
-    l = remove_nr(s.split("\t"))
+    l = s.rstrip().split("\t")
     if i == 0:
       title = l
     else:
@@ -29,6 +29,8 @@ def get_file_structure(fdoc,start_expr):
       expressions.append(new_expr)
   return title, genes, expressions
 #---------------------------------------------------------------------------------------
+#Get the gene expression of the genes that are not part of the targets/golden standard 
+#for the DREAM3 challenge
 def get_complementary_genes(genes,target):
   antitarget = list()
   for i in range(len(genes)):
@@ -36,15 +38,27 @@ def get_complementary_genes(genes,target):
       antitarget.append(genes[i])
   return antitarget
 #---------------------------------------------------------------------------------------
+#Organize the data of the DREAM3 challenge
 class Data(object):
   def __init__(self,fdata,fchal,fansw):
+    #Get the different fields of the DREAM3 files
+    #self.expressions contain the training data
     self.title,   self.genes,   self.expressions  = get_file_structure(fdata,3)
+    #self.targets contain the name of the genes to impute
     _,            self.targets,  _                = get_file_structure(fchal,1)
+    #self.answer contains the ranked imputation (golden standard values for the challenge)
     _,            _,            self.answer       = get_file_structure(fansw,2)
+    #Gene expressions that are not part of the tagerts
     self.antitargets = get_complementary_genes(self.genes,self.targets)
+    #Turn characters into integers
     for i in range(len(self.answer)):
       self.answer[i] = map(int,self.answer[i])
 #---------------------------------------------------------------------------------------
+#Allows to get a subset of a matrix of gene expressions
+#data = full matrix of gene expressions
+#tagerts = restrict the genes to be selected (can be a list of lists for parallel computation)
+#times = restrict the time points to be selected
+#strains = restrict the yeast strains to be selected
 def get_targets_expressions(targets,data,times,strains,function = lambda x : x):
   expr_list = list()
   for k in range(len(targets)):
@@ -60,6 +74,9 @@ def get_targets_expressions(targets,data,times,strains,function = lambda x : x):
     expr_list.append(expr)
   return expr_list
 #---------------------------------------------------------------------------------------
+#Turn gene expressions into positive values by replacing the expressions with a pair of values
+#where the left component contains the absolute value of a negative expression
+#and the right compoenent contains the value of a positive expression
 def separate_up_down(a_list,function = lambda x: x):
   output = list()
   for i in range(len(a_list)):
@@ -74,18 +91,21 @@ def separate_up_down(a_list,function = lambda x: x):
       output.extend([function(1),function(1)])
   return output
 #---------------------------------------------------------------------------------------
+#Turn a tuple (x,y) of positive values back to a real value by using x-y
 def reunite_up_down(a_list,function = lambda x: x):
   output = list()
   for i in range(len(a_list)/2):
     output.append(function(a_list[2*i+1]-a_list[2*i]))
   return output
 #---------------------------------------------------------------------------------------
+#Euclidean distance
 def distance(list1,list2):
   d = 0
   for i in range(len(list1)):
     d += (list1[i] - list2[i])**2
   return math.sqrt(d)
 #---------------------------------------------------------------------------------------
+#Chose the closest vector to a specific vector from a lists of vector using the Euclidean distance
 def closest_vector(a_list,list_of_lists):
   distances = list()
   for i in range(len(list_of_lists)):
@@ -94,6 +114,7 @@ def closest_vector(a_list,list_of_lists):
   distances = sorted(distances, key = lambda x :x[1])
   return distances[0]
 #---------------------------------------------------------------------------------------
+#Agreement: see definition in the mathematical development
 def agreement(vector1,vector2):
   agree = 0
   norm1 = 0
@@ -104,12 +125,14 @@ def agreement(vector1,vector2):
     norm2 += vector2[i]**2
   return agree/math.sqrt(norm1*norm2)
 #---------------------------------------------------------------------------------------  
+#Merge two images of the same height with a black vertical black line in the middle
 def merge(im1,im2):
   im = list()
   for i in range(min(len(im1),len(im2))):
     im.append(im1[i]+[-1]+im2[i])
   return im
-#---------------------------------------------------------------------------------------  
+#---------------------------------------------------------------------------------------
+#Merge two images of different height with a vertical white strip in the middle  
 def merge2(im1,im2):
   im = list()
   for i in range(min(len(im1),len(im2))):
@@ -333,13 +356,15 @@ def plot_bar2(new_integration,vertical,horizontal,interval,color,option = "raw",
   plt.rc('ytick',labelsize=8)
   fig, ax = plt.subplots(vertical,horizontal)
   fig.tight_layout(pad=.3)
-  
+  #------------------------------------
   pdflist = list()
   vallist = list()
+  #------------------------------------
   for i in interval:
     pdf, val = discrete_pdf(new_integration,i)
     pdflist.append(pdf)
     vallist.append(val)
+  #------------------------------------
   for j in range(vertical):
     for k in range(horizontal):
       pdf = pdflist[horizontal*j+k]
@@ -361,11 +386,36 @@ def plot_bar2(new_integration,vertical,horizontal,interval,color,option = "raw",
         c = scstat.norm.pdf(range(len(smooth)),mu,sigma)
         c = [h/float(max(c)) *i for i in c]
         plt.plot(range(len(smooth)),c)
-      
-      
-      
+  #------------------------------------    
   plt.rc('xtick',labelsize=12)
   plt.rc('ytick',labelsize=12)
+#---------------------------------------------------------------------------------------
+#Display the expression values of a table using green to blue colors
+#Takes care of coloring the missing data "PREDICT" in black
+def pixel_format(image):
+  new_image = list()
+  for i in range(len(image)):
+    row = list()
+    for j in range(len(image[i])):
+      if image[i][j] == "PREDICT":
+        row.append([30,30,30])
+      else:
+        row.append([50,int(130*float(image[i][j])),100])
+    new_image.append(row)
+  return new_image
+#---------------------------------------------------------------------------------------
+#Display a hashed window using the colors [40,0,80] and [35,0,72].
+def space(height,width):
+  sp = list()
+  for i in range(height):
+    s = list()
+    for k in range(width):
+      if (k+i)%4 != 0 and (k-i)%4 != 0 and not(i in [0,height-1]):
+        s.append([40,0,80])
+      else:
+        s.append([35,0,72])
+    sp.append(s)
+  return sp
 #---------------------------------------------------------------------------------------
 fdata = open("data/expression_challenge/ExpressionData_UPDATED.txt","r")
 fchal = open("data/expression_challenge/TargetList.txt","r")
@@ -375,6 +425,9 @@ fdata.close()
 fchal.close()
 fansw.close()
 #---------------------------------------------------------------------------------------
+#This is a test for the use of scstat.norm.pdf, which is used in the function plot_bar2 (see above).
+#The function plot_bar2 is used to define moving averages (see tutorial, section 2.8).
+#we plot the cumulative gaussian distribution with mean = .9 and standard deviation = .3.
 if "gauss" in sys.argv[1:]:
   plt.plot(range(10),scstat.norm.pdf(map(lambda t:t/10.0, range(10)),.9,.3))
   plt.show()
@@ -382,37 +435,19 @@ if "gauss" in sys.argv[1:]:
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 if "figure1" in sys.argv[1:]:
+  #The DREAM3 challenge data is organized within the class Data.
+  #data.antitargets is list of complete gene expressions (no missing values)
+  #data.targets is the list of gene name with missing values
+  #get_targets_expressions will ouput the first 8 time points for all strains and
+  #for each of the genes in data.antitargets and in data.targets (the output is a lists of lists)
   queries = [data.antitargets,data.targets]
   training, load_initial = get_targets_expressions(queries,data,range(0,8),[0,1,2,3])
-  
-  def pixel_format(image):
-    new_image = list()
-    for i in range(len(image)):
-      row = list()
-      for j in range(len(image[i])):
-        if image[i][j] == "PREDICT":
-          row.append([30,30,30])
-        else:
-          row.append([50,int(130*float(image[i][j])),100])
-      new_image.append(row)
-    return new_image
-  
-  def space(height,width):
-    sp = list()
-    for i in range(height):
-      s = list()
-      for k in range(width):
-        if (k+i)%4 != 0 and (k-i)%4 != 0 and not(i in [0,height-1]):
-          s.append([40,0,80])
-        else:
-          s.append([35,0,72])
-      sp.append(s)
-    return sp
-    
-    
-    
+ 
+  #This is the first image shown in section 2.8 of the documentation
+  #The variable "images" is a matrix of rgb vectors
   images = pixel_format(training[:40]) + space(10,8*4) + pixel_format(training[200:220])+ pixel_format(load_initial)  + pixel_format(training[500:520]) + space(10,8*4) + pixel_format(training[len(training)-40:])
   
+  #Dipslay the matrix of pixels
   fig, ax = plt.subplots(1)
   ax.imshow(images)
   plt.xlabel("expressions")
@@ -423,37 +458,19 @@ if "figure1" in sys.argv[1:]:
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 if "figure2" in sys.argv[1:]:
+  #The DREAM3 challenge data is organized within the class Data.
+  #data.antitargets is list of complete gene expressions (no missing values)
+  #data.targets is the list of gene name with missing values
+  #get_targets_expressions will ouput the first 8 time points of strains 0, 2 and 3,
+  #for each of the genes in data.antitargets and in data.targets (the output is a lists of lists)
   queries = [data.antitargets,data.targets]
   training, load_initial = get_targets_expressions(queries,data,range(0,8),[0,2,3])
-  
-  def pixel_format(image):
-    new_image = list()
-    for i in range(len(image)):
-      row = list()
-      for j in range(len(image[i])):
-        if image[i][j] == "PREDICT":
-          row.append([30,30,30])
-        else:
-          row.append([50,int(130*float(image[i][j])),100])
-      new_image.append(row)
-    return new_image
-  
-  def space(height,width):
-    sp = list()
-    for i in range(height):
-      s = list()
-      for k in range(width):
-        if (k+i)%4 != 0 and (k-i)%4 != 0 and not(i in [0,height-1]):
-          s.append([40,0,80])
-        else:
-          s.append([35,0,72])
-      sp.append(s)
-    return sp
-    
-    
-    
+
+  #This image is use din the second figure shown in section 2.8 of the documentation
+  #The variable "images" is a matrix of rgb vectors
   images = pixel_format(training[:40]) + space(10,8*3) + pixel_format(training[200:220]) + pixel_format(training[500:520]) + space(10,8*3) + pixel_format(training[len(training)-40:])
   
+  #Display an image representing the database without the incomplete gene expressions
   fig, ax = plt.subplots(1)
   ax.imshow(images)
   plt.xlabel("expressions")
@@ -461,8 +478,16 @@ if "figure2" in sys.argv[1:]:
   plt.axis("off")
   plt.show()
   
+  #get_targets_expressions will ouput the first 8 time points of all strains (in the order 1,0,2,3)
+  #for each of the genes in data.targets (the output is a lists of lists)
+  queries = [data.targets]
+  load_initial = get_targets_expressions(queries,data,range(0,8),[1,0,2,3])[0]
+  
+  #This image is use din the second figure shown in section 2.8 of the documentation
+  #The variable "images" is a matrix of rgb vectors
   images = pixel_format(load_initial)
   
+  #Display an image representing the gene expressions with missing values
   fig, ax = plt.subplots(1)
   ax.imshow(images)
   plt.xlabel("expressions")
@@ -472,33 +497,10 @@ if "figure2" in sys.argv[1:]:
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
+#Same as figure3, but where the two images are merged as one
 if "figure3" in sys.argv[1:]:
   queries = [data.antitargets,data.targets]
   training, load_initial = get_targets_expressions(queries,data,range(0,8),[1,0,2,3])
-  
-  def pixel_format(image):
-    new_image = list()
-    for i in range(len(image)):
-      row = list()
-      for j in range(len(image[i])):
-        if image[i][j] == "PREDICT":
-          row.append([30,30,30])
-        else:
-          row.append([50,int(130*float(image[i][j])),100])
-      new_image.append(row)
-    return new_image
-  
-  def space(height,width):
-    sp = list()
-    for i in range(height):
-      s = list()
-      for k in range(width):
-        if (k+i)%4 != 0 and (k-i)%4 != 0 and not(i in [0,height-1]):
-          s.append([40,0,80])
-        else:
-          s.append([35,0,72])
-      sp.append(s)
-    return sp
     
   image1 = pixel_format(training[:40]) + space(10,8*4) + pixel_format(training[200:220])+ space(10,8*4)  + pixel_format(training[500:520]) + space(10,8*4) + pixel_format(training[len(training)-40:])    
     
@@ -515,6 +517,8 @@ if "figure3" in sys.argv[1:]:
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
+#This is a ad-hoc machine learning method that uses agreements/cos-similarities to impute 
+#the missing gene expression. This method works well, but cannot be generalized to other problems.
 if "easy_answer" in sys.argv[1:]:
   queries = [data.antitargets,data.targets]
   training, load_initial = get_targets_expressions(queries,data,range(0,8),[0,2,3])
@@ -600,6 +604,7 @@ if "easy_answer" in sys.argv[1:]:
 #---------------------------------------------------------------------------------------
 #---------------------------------------METHOD------------------------------------------
 #--------------------------------------------------------------------------------------- 
+# Analyses shown in section 2.8.4 of the documentation
 if "method" in sys.argv[1:]:
   queries = [data.antitargets,data.targets]
   training, load_initial = get_targets_expressions(queries,data,range(0,8),[0,2,3])

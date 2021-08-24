@@ -260,47 +260,7 @@ for i in range(iterations):
         F = 20#10
         #10^(11+x)(y/M)^20 = K * 10^x(y/.9)^20 => x = 20log(.9/y) => x  = 20log(.9/y) - log(fold)
     #------------------
-    if sys.argv[1] == "DREAM3_3.276":
-      #------------------
-      brightness = [.98]           
-      if 0 <= i < training_images:
-        profiles = [ [(.85,1)], [(0,.85)] ] 
-        scores = [ (.9,1), (.98,1) ]
-        E = 11
-        F = 20
-      if training_images <= i < 2*training_images-1:
-        profiles = [ [(.85,1)], [(0,.85)]  ] 
-        scores = [ (.85,1), (.98,1) ] #20*log(0.9/.85) = .5
-        E = 11.5
-        F = 20#15
-      if 2*training_images <= i < iterations:
-        profiles = [ [(.85,1)], [(0,.85)]  ] #20*log(0.9/.8) = 1
-        scores = [ (.8,1), (.98,1) ]
-        E = 12
-        F = 20#10
-        #10^(11+x)(y/M)^20 = K * 10^x(y/.9)^20 => x = 20log(.9/y) => x  = 20log(.9/y)
-    #------------------
-    if sys.argv[1] == "DREAM3_3.287":
-      #------------------
-      brightness = [.98]           
-      if 0 <= i < training_images:
-        profiles = [ [(.85,1)], [(0,.85)] ] 
-        scores = [ (.9,1), (.98,1) ]
-        E = 11
-        F = 20
-      if training_images <= i < 2*training_images-1:
-        profiles = [ [(.85,1)], [(0,.85)]  ] 
-        scores = [ (.85,1), (.98,1) ] #20*log(0.9/.85) = .5
-        E = 11.5
-        F = 20#15
-      if 2*training_images <= i < iterations:
-        profiles = [ [(.85,1)], [(0,.85)]  ] #20*log(0.9/.8) = 1
-        scores = [ (.8,1), (.98,1) ]
-        E = 12
-        F = 20#10
-        #10^(11+x)(y/M)^20 = K * 10^x(y/.9)^20 => x = 20log(.9/y)
-    #------------------
-    if sys.argv[1] == "DREAM3_3.575":
+    if sys.argv[1] == "DREAM3":
       #------------------
       brightness = [.98]           
       if 0 <= i < training_images:
@@ -322,18 +282,20 @@ for i in range(iterations):
     #------------------
     if sys.argv[1] == "DREAM3":
       #------------------
-      brightness = [.98]
-      profiles = [ [(.85,1)], [(0,.85)]  ]      
+      brightness = [.98]           
       if 0 <= i < training_images:
-        scores = [ (.92,1), (.98,1) ]
+        profiles = [ [(.85,1)], [(0,.85)] ] 
+        scores = [ (.9,1), (.98,1) ]
         E = 11
         F = 20
       if training_images <= i < 2*training_images-1:
-        scores = [ (.86,1), (.98,1) ] #20*log(0.9/.85) = .5
+        profiles = [ [(.85,1)], [(0,.85)]  ] 
+        scores = [ (.85,1), (.98,1) ] #20*log(0.9/.85) = .5
         E = 11.25
         F = 20#15
       if 2*training_images <= i < iterations:
-        scores = [ (.82,1), (.98,1) ] #20*log(0.9/.8) = 1
+        profiles = [ [(.85,1)], [(0,.85)]  ] #20*log(0.9/.8) = 1
+        scores = [ (.8,1), (.98,1) ]
         E = 11.5
         F = 20#10
         #10^(11+x)(y/M)^20 = K * 10^x(y/.9)^20 => x = 20log(.9/y) => x  = 20log(.9/y) - log(fold)
