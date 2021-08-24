@@ -637,6 +637,8 @@ if "method" in sys.argv[1:]:
   
   #-----------------------------------------------
   
+  #Distrubtions assocaited with the agreement scores for each of the 50 
+  #incomplete gene expressions
   thresholds = list()
   fig, ax = plt.subplots(10,5)
   for i in range(10):
@@ -650,7 +652,7 @@ if "method" in sys.argv[1:]:
   plt.show()
 
   #-----------------------------------------------
-  
+  #Thresholding of the highest bins associated with the agreement score distributions
   integration = list()
   agree_graph = list()
   x = []
@@ -686,6 +688,7 @@ if "method" in sys.argv[1:]:
   
   #-----------------------------------------------
   
+  #Illustration of a binning of the best agreement scores
   new_integration = integration[:]
   new_integration.sort()
   M = max(new_integration)
@@ -702,6 +705,7 @@ if "method" in sys.argv[1:]:
     
   #-----------------------------------------------
   
+  #Various binnings of the best agreement scores
   interval = [5*(11-i) for i in range(0,11)]+[3]
   plot_bar2(new_integration,4,3,interval,color = "#7fcdac")
   plot_bar2(new_integration,4,3,interval,color = "#7fcdac",option = "approximate")
@@ -717,6 +721,11 @@ if "method" in sys.argv[1:]:
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 if "training" in sys.argv[1:]:
+  #The DREAM3 challenge data is organized within the class Data.
+  #data.antitargets is list of complete gene expressions (no missing values)
+  #data.targets is the list of gene name with missing values
+  #get_targets_expressions will ouput the first 8 time points for all strains and
+  #for each of the genes in data.antitargets and in data.targets (the output is a lists of lists)
   queries = [data.antitargets,data.targets]
   training, load_initial = get_targets_expressions(queries,data,range(0,8),[1,0,2,3])
   
