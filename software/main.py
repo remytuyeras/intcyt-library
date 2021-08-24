@@ -173,7 +173,7 @@ for i in range(iterations):
   #------------------
   filtering = [1.5, #To control fission
                1.5, #To control fusion
-               interval(step,10,2)]  #To control fission and fusion: minimum threshold for cliques
+               10] #interval(step,10,2)]  #To control fission and fusion: minimum threshold for cliques
                #0,2,30,interval(step,10,2)
   #------------------    
   for k in range(epoch):
@@ -239,26 +239,6 @@ for i in range(iterations):
                 (.95,1)] #expert
       E = 13.5
       F = 22.5
-    #------------------
-    if sys.argv[1] == "DREAM3_1":
-      #------------------
-      brightness = [.98]           
-      if 0 <= i < training_images:
-        profiles = [ [(.85,1)], [(0,.85)] ] 
-        scores = [ (.9,1), (.98,1) ]
-        E = 11
-        F = 20
-      if training_images <= i < 2*training_images-1:
-        profiles = [ [(.85,1)], [(0,.85)]  ] 
-        scores = [ (.85,1), (.98,1) ] #20*log(0.9/.85) = .5
-        E = 11.25
-        F = 20#15
-      if 2*training_images <= i < iterations:
-        profiles = [ [(.85,1)], [(0,.85)]  ] #20*log(0.9/.8) = 1
-        scores = [ (.8,1), (.98,1) ]
-        E = 11.5
-        F = 20#10
-        #10^(11+x)(y/M)^20 = K * 10^x(y/.9)^20 => x = 20log(.9/y) => x  = 20log(.9/y) - log(fold)
     #------------------
     if sys.argv[1] == "DREAM3":
       #------------------
