@@ -539,7 +539,55 @@ class _Useful:
       matrix.append(matrix_i)
     return matrix
   #------------------------------------------------------------------------------
-  #CODE TAKEN FROM THE PEDIGRAD LIBRARY
+  #CODE TAKEN FROM THE PEDIGRAD LIBRARY:
+  #This function takes 2 lists of lists, taken as classes of a binary relation, and applies
+  #a transisitive completion of these classes (i.e. the algorithm forms the union of the pair 
+  #of lists that possess a non-empty intersection, iteratively, until the algorithm converges).
+  def join_fibers2(self,fibers1,fibers2,speed = "REG"):
+    tmp1 = list()
+    tmp2 = list()
+    
+    for i in range(len(fibers1)):
+      tmp1.append(list(set(fibers1[i])))
+      
+    for i in range(len(fibers2)):
+      tmp2.append(list(set(fibers2[i])))
+      
+    i1 = 0
+    while i1<len(tmp1):
+      j1 = 0
+      while i1<len(tmp1) and j1<len(tmp1[i1]):
+        i2 = 0
+        while i2<len(tmp2):
+          flag = False
+          j2 = 0  
+          while i2<len(tmp2) and j2<len(tmp2[i2]):
+            if tmp1[i1][j1] == tmp2[i2][j2]:
+              tmp1[i1].extend(tmp2[i2])
+              tmp2[i2]=[]
+              tmp1[i1] = list(set(tmp1[i1]))
+              flag = True
+              break
+            j2+=1
+          #tmp1[i1][j1] no longer needs to be searched in tmp2.
+          if speed == "FAST" and flag == True:
+            break
+          i2+=1
+        j1+=1
+      tmp2.append(tmp1[i1])
+      tmp1[i1] = []
+      i1+=1
+    the_join = list()
+    for i in range(len(tmp2)):
+      if tmp2[i]!=[]:
+        the_join.append(tmp2[i])
+        
+    return the_join
+  #------------------------------------------------------------------------------
+  #CODE TAKEN FROM THE PEDIGRAD LIBRARY:
+  #This function takes 2 lists of lists, taken as classes of a binary relation, and applies
+  #a transisitive completion of these classes (i.e. the algorithm forms the union of the pair 
+  #of lists that possess a non-empty intersection, iteratively, until the algorithm converges).
   def join_fibers(self,fibers1,fibers2,speed = "REG"):
     tmp1 = list()
     tmp2 = list()
