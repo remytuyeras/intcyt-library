@@ -470,7 +470,7 @@ if "figure2" in sys.argv[1:]:
   #The variable "images" is a matrix of rgb vectors
   images = pixel_format(training[:40]) + space(10,8*3) + pixel_format(training[200:220]) + pixel_format(training[500:520]) + space(10,8*3) + pixel_format(training[len(training)-40:])
   
-  #Display an image representing the database without the incomplete gene expressions
+  #Display an image representing the database without the hidden gene expressions
   fig, ax = plt.subplots(1)
   ax.imshow(images)
   plt.xlabel("expressions")
@@ -637,8 +637,8 @@ if "method" in sys.argv[1:]:
   
   #-----------------------------------------------
   
-  #Distrubtions assocaited with the agreement scores for each of the 50 
-  #incomplete gene expressions
+  #Distrubitions assocaited with the agreement scores for each of the 50 
+  #hidden gene expressions
   thresholds = list()
   fig, ax = plt.subplots(10,5)
   for i in range(10):
