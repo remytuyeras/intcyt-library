@@ -240,27 +240,7 @@ for i in range(iterations):
       E = 13.5
       F = 22.5
     #------------------
-    if sys.argv[1] == "DREAM3_3.190":
-      #------------------
-      brightness = [.98]           
-      if 0 <= i < training_images:
-        profiles = [ [(.85,1)], [(0,.85)] ]
-        scores = [ (.9,1), (.98,1) ]
-        E = 11
-        F = 20
-      if training_images <= i < 2*training_images-1:
-        profiles = [ [(.85,1)], [(0,.85)]  ] 
-        scores = [ (.85,1), (.98,1) ]
-        E = 11.25
-        F = 20#15
-      if 2*training_images <= i < iterations:
-        profiles = [ [(.85,1)], [(0,.85)]  ]
-        scores = [ (.8,1), (.98,1) ]
-        E = 11.5
-        F = 20#10
-        #10^(11+x)(y/M)^20 = K * 10^x(y/.9)^20 => x = 20log(.9/y) => x  = 20log(.9/y) - log(fold)
-    #------------------
-    if sys.argv[1] == "DREAM3":
+    if sys.argv[1] == "DREAM3_1":
       #------------------
       brightness = [.98]           
       if 0 <= i < training_images:
